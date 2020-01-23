@@ -158,6 +158,24 @@ Blockly.Events.COMMENT_CHANGE = 'comment_change';
 Blockly.Events.COMMENT_DELETE = 'comment_delete';
 
 /**
+ * Name of event that deletes a dice.
+ * @const
+ */
+Blockly.Events.DICE_DELETE = 'dice_delete';
+
+/**
+ * Name of event that changes a dice.
+ * @const
+ */
+Blockly.Events.DICE_CHANGE = 'dice_change';
+
+/**
+ * Name of event that creates a dice.
+ * @const
+ */
+Blockly.Events.DICE_CREATE = 'dice_create';
+
+/**
  * Name of event that records a UI change.
  * @const
  */
@@ -381,6 +399,15 @@ Blockly.Events.fromJson = function(json, workspace) {
       break;
     case Blockly.Events.END_DRAG:
       event = new Blockly.Events.EndBlockDrag(null, false);
+      break;
+    case Blockly.Events.DICE_DELETE:
+      event = new Blockly.Events.DiceDelete(null);
+      break;
+    case Blockly.Events.DICE_CHANGE:
+      event = new Blockly.Events.DiceChange(null);
+      break;
+    case Blockly.Events.DICE_CREATE:
+      event = new Blockly.Events.DiceCreate(null);
       break;
     default:
       throw 'Unknown event type.';

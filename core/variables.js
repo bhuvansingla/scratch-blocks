@@ -30,6 +30,7 @@
  **/
 goog.provide('Blockly.Variables');
 
+goog.require('Blockly.Events.DiceCreate')
 goog.require('Blockly.Blocks');
 goog.require('Blockly.constants');
 goog.require('Blockly.VariableModel');
@@ -342,6 +343,26 @@ Blockly.Variables.createVariable = function(workspace, opt_callback, opt_type) {
           }
         }
       }, modalTitle, opt_type);
+};
+
+/**
+ * Create a new dice variable
+ * @param {Blockly.Workspace} workspace
+ */
+Blockly.Variables.createDice = function(workspace) {
+  Blockly.dicePrompt(function (dicename, dicetype) {
+    var variable = workspace.createVariable(dicename, 'dice', null, true, true);
+    if(variable){
+      Blockly.Events.fire(new Blockly.Events.DiceCreate(dicename, dicetype, workspace));
+      var blocks = workspace.getFlyout().getWorkspace().getAllBlocks()
+      for (var i = 0; i < blocks.length; i++) {
+        if (blocks[i].id == 'dicedropdown') {
+          blocks[i].inputList[0].fieldRow[0].setValue(dicename);
+        }
+      }
+    }
+  });
+  return;
 };
 
 /**

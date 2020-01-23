@@ -299,6 +299,25 @@ Blockly.Blocks['extension_chance_markov'] = {
   }
 };
 
+Blockly.Blocks['extension_chance_dicedropdown'] = {
+  /**
+   * @this Blockly.Block
+   */
+  init: function() {
+    this.jsonInit({
+      "message0": "%1",
+      "args0": [
+        {
+          "type": "input_value",
+          "name": "DICEDROPDOWN"
+        }
+      ],
+      "category": Blockly.Categories.pen,
+      "extensions": ["colours_pen", "shape_statement", "scratch_extension"]
+    });
+  }
+};
+
 Blockly.Blocks['extension_music_play_note'] = {
   /**
    * @this Blockly.Block

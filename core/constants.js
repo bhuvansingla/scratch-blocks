@@ -342,6 +342,14 @@ Blockly.NEW_BROADCAST_MESSAGE_ID = 'NEW_BROADCAST_MESSAGE_ID';
 Blockly.BROADCAST_MESSAGE_VARIABLE_TYPE = 'broadcast_msg';
 
 /**
+ * String representing the variable type of dice.
+ * This string, for use in differentiating between types of variables,
+ * indicates that the current variable is a dice.
+ * @const {string}
+ */
+Blockly.DICE_VARIABLE_TYPE = 'dice';
+
+/**
  * String representing the variable type of list blocks.
  * This string, for use in differentiating between types of variables,
  * indicates that the current variable is a list.
