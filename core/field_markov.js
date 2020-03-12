@@ -85,6 +85,13 @@ Blockly.FieldMarkov = function (markov) {
   this.diceType_ = '';
 
   /**
+   * Name of dice
+   * @type {String}
+   * @private
+   */
+  this.diceName_ = '';
+
+  /**
    * Array of costumes' image data
    * @type {Array}
    * @private
@@ -287,8 +294,7 @@ Blockly.FieldMarkov.MAX_SLIDER_HEIGHT = 135;
  * @type {number}
  * @const
  */
-Blockly.FieldMarkov.SLIDER_STAGE_HEIGHT = 180 - 17 //145;//140;
-
+Blockly.FieldMarkov.SLIDER_STAGE_HEIGHT = 180 - 17;
 
 /**
  * Maximum number of sliders that can exist.
@@ -468,7 +474,7 @@ Blockly.FieldMarkov.prototype.setValue = function (markovValue) {
   }
   var strings = splitted[1];
   var diceType = splitted[2];
-
+  var diceName = splitted[4];
   if (this.sourceBlock_ && Blockly.Events.isEnabled()) {
     Blockly.Events.fire(new Blockly.Events.Change(
       this.sourceBlock_, 'field', this.name, this.markovValue_, markovValue));
@@ -479,6 +485,7 @@ Blockly.FieldMarkov.prototype.setValue = function (markovValue) {
   this.sliders_ = JSON.parse("[" + sliders + "]");
   this.sliderStrings_ = strings.split('~');
   this.diceType_ = diceType;
+  this.diceName_ = diceName;
   switch (this.diceType_) {
     case 'costume':
       this.costumeData_ = splitted[3].split('~');
@@ -527,7 +534,10 @@ Blockly.FieldMarkov.prototype.showEditor_ = function () {
   markovDiv.style.display = 'inline-block';
   markovDiv.style.overflow = 'auto';
   markovDiv.style.maxHeight = '180px';
-  markovDiv.style.marginBottom = '20px';
+  markovDiv.style.marginBottom = (this.diceType_ === 'costume') ? '10px' : '20px';
+  markovDiv.style.marginRight = (this.diceType_ === 'costume') ? '-12px' : '-5px';
+  markovDiv.style.paddingLeft = '8px';
+  markovDiv.style.direction = 'rtl'
   markovDiv.id = 'chanceExtension';
   div.appendChild(markovDiv);
 
@@ -545,63 +555,99 @@ Blockly.FieldMarkov.prototype.showEditor_ = function () {
   }, markovDiv);
 
   //Add markov view buttons
-  for (var i = -1; i < this.sliderStrings_.length; i++) {
-    var color = (i == this.sliderStrings_.indexOf(this.currentView_)) ? '#ffffff' : this.sourceBlock_.getColourTertiary();
-    var markovViewBoxContainer = Blockly.utils.createSvgElement('rect', {
-      'height': Blockly.FieldMarkov.INPUT_BOX_HEIGHT + 2,
-      'width': Blockly.FieldMarkov.INPUT_BOX_WIDTH,
-      'rx': Blockly.FieldMarkov.SLIDER_NODE_RADIUS,
-      'ry': Blockly.FieldMarkov.SLIDER_NODE_RADIUS,
-      'fill': color,
-      'id': i,
-      'x': 0,
-      'y': (i + 1) * (Blockly.FieldMarkov.INPUT_BOX_HEIGHT + Blockly.FieldMarkov.PAD),
-    }, markovViews);
+  if (this.diceType_ !== 'costume') {
+    for (var i = -1; i < this.sliderStrings_.length; i++) {
+      var color = (i == this.sliderStrings_.indexOf(this.currentView_)) ? '#ffffff' : this.sourceBlock_.getColourTertiary();
+      var markovViewBoxContainer = Blockly.utils.createSvgElement('rect', {
+        'height': Blockly.FieldMarkov.INPUT_BOX_HEIGHT + 2,
+        'width': Blockly.FieldMarkov.INPUT_BOX_WIDTH,
+        'rx': Blockly.FieldMarkov.SLIDER_NODE_RADIUS,
+        'ry': Blockly.FieldMarkov.SLIDER_NODE_RADIUS,
+        'fill': color,
+        'id': i,
+        'x': 0,
+        'y': (i + 1) * (Blockly.FieldMarkov.INPUT_BOX_HEIGHT + Blockly.FieldMarkov.PAD),
+      }, markovViews);
 
-    var addButtonText = Blockly.utils.createSvgElement('foreignObject', {
-      'height': Blockly.FieldMarkov.INPUT_BOX_HEIGHT + 2,
-      'width': Blockly.FieldMarkov.INPUT_BOX_WIDTH - 4,
-      // 'x': Blockly.FieldMarkov.INPUT_BOX_HEIGHT / 2 + 0.5,
-      'x': 2,
-      'y': (i + 1) * (Blockly.FieldMarkov.INPUT_BOX_HEIGHT + Blockly.FieldMarkov.PAD),
-      'fill': '#91dfbf',
-      'id': i
-    }, markovViews);
+      var addButtonText = Blockly.utils.createSvgElement('foreignObject', {
+        'height': Blockly.FieldMarkov.INPUT_BOX_HEIGHT + 2,
+        'width': Blockly.FieldMarkov.INPUT_BOX_WIDTH - 4,
+        'x': 2,
+        'y': (i + 1) * (Blockly.FieldMarkov.INPUT_BOX_HEIGHT + Blockly.FieldMarkov.PAD) + 1,
+        'fill': '#91dfbf',
+        'id': i
+      }, markovViews);
 
-
-    if (i == -1) {
-      var img = Blockly.utils.createSvgElement('image',
-        {
-          'width': '18px',
-          'height': '18px',
-          'x': '6px',
-          'y': '1px',
-          'id': i
-        }, markovViews);
-      img.setAttributeNS(
-        'http://www.w3.org/1999/xlink',
-        'xlink:href',
-        Blockly.mainWorkspace.options.pathToMedia + Blockly.FieldMarkov.DICE_GREEN_SVG_PATH
-      );
-      img.addEventListener('click', this.changeViewListener_.bind(this), false);
+      if (i == -1) {
+        var diceImg = document.createElement('img');
+        addButtonText.appendChild(diceImg);
+        diceImg.src = Blockly.mainWorkspace.options.pathToMedia + Blockly.FieldMarkov.DICE_GREEN_SVG_PATH;
+        diceImg.height = 18;
+        diceImg.width = 18;
+        diceImg.id = i;
+        diceImg.title = this.diceName_;
+        diceImg.style.display = 'block';
+        diceImg.style.margin = 'auto';
+        diceImg.addEventListener('click', this.changeViewListener_.bind(this), false);
+      }
+      else {
+        var text = document.createElement('p');
+        text.id = i;
+        text.style.fontSize = '12px';
+        text.style.color = '#91dfbf';
+        text.style.margin = 0;
+        text.style.textAlign = 'center';
+        text.style.wordBreak = 'break-all';
+        text.title = this.sliderStrings_[i];
+        text.innerHTML = this.sliderStrings_[i];
+        text.addEventListener('click', this.changeViewListener_.bind(this), false);
+        addButtonText.appendChild(text);
+      }
+      markovViewBoxContainer.addEventListener('click', this.changeViewListener_.bind(this), false);
     }
-    else {
-      var text = document.createElement('p');
-      text.id = i;
-      text.style.fontSize = '12px';
-      text.style.color = '#91dfbf';
-      text.style.margin = 0;
-      text.style.textAlign = 'center';
-      text.style.wordBreak = 'break-all';
-      text.title = this.sliderStrings_[i];
-      text.innerHTML = this.sliderStrings_[i];
-      text.addEventListener('click', this.changeViewListener_.bind(this), false);
-      addButtonText.appendChild(text);
+  }
+  else {
+    for (var i = -1; i < this.sliderStrings_.length; i++) {
+      var stroke_width = (i == this.sliderStrings_.indexOf(this.currentView_)) ? '2px' : '0px';
+      var markovViewBoxContainer = Blockly.utils.createSvgElement('rect', {
+        'height': Blockly.FieldMarkov.INPUT_BOX_HEIGHT + 2,
+        'width': Blockly.FieldMarkov.INPUT_BOX_HEIGHT + 2,
+        'rx': Blockly.FieldMarkov.SLIDER_NODE_RADIUS,
+        'ry': Blockly.FieldMarkov.SLIDER_NODE_RADIUS,
+        'fill': '#ffffff',
+        'stroke': '#4b8f6a',
+        'stroke-width': stroke_width,
+        'id': i,
+        'x': 4,
+        'y': (i + 1) * (Blockly.FieldMarkov.INPUT_BOX_HEIGHT + Blockly.FieldMarkov.PAD),
+      }, markovViews);
+      var addButtonText = Blockly.utils.createSvgElement('foreignObject', {
+        'height': Blockly.FieldMarkov.INPUT_BOX_HEIGHT + 2,
+        'width': Blockly.FieldMarkov.INPUT_BOX_WIDTH - 4,
+        'x': 2,
+        'y': (i + 1) * (Blockly.FieldMarkov.INPUT_BOX_HEIGHT + Blockly.FieldMarkov.PAD) + 1,
+        'fill': '#ffffff',
+        'id': i
+      }, markovViews);
+
+      var diceImg = document.createElement('img');
+      addButtonText.appendChild(diceImg);
+      if (i == -1) {
+        diceImg.src = Blockly.mainWorkspace.options.pathToMedia + Blockly.FieldMarkov.DICE_GREEN_SVG_PATH;
+      } else {
+        diceImg.src = "data:" + this.costumeData_[i].split('*')[0] + ";base64," + this.costumeData_[i].split('*')[1];
+      }
+      diceImg.height = 18;
+      diceImg.width = 18;
+      diceImg.id = i;
+      diceImg.title = (i === -1) ? this.diceName_ : this.sliderStrings_[i];
+      diceImg.style.display = 'block';
+      diceImg.style.margin = 'auto';
+      diceImg.addEventListener('click', this.changeViewListener_.bind(this), false);
     }
     markovViewBoxContainer.addEventListener('click', this.changeViewListener_.bind(this), false);
   }
 
-  //Blockly.FieldMarkov.SLIDER_STAGE_HEIGHT = (Blockly.FieldMarkov.INPUT_BOX_HEIGHT + Blockly.FieldMarkov.PAD) * (numSliders + 1) + Blockly.FieldMarkov.BUTTON_HEIGHT + (Blockly.FieldMarkov.WASTEBIN_MARGIN / 2); 
   var mainDiv = document.createElement('div');
   mainDiv.style.display = 'inline-block';
   div.appendChild(mainDiv);
@@ -625,12 +671,10 @@ Blockly.FieldMarkov.prototype.showEditor_ = function () {
   sliderStageDiv.id = 'chanceExtension';
   mainDiv.appendChild(sliderStageDiv);
 
-  // var height = ((Blockly.FieldMarkov.INPUT_BOX_HEIGHT + Blockly.FieldMarkov.PAD) * (numSliders + 1) + Blockly.FieldMarkov.BOTTOM_MARGIN + Blockly.FieldMarkov.BUTTON_HEIGHT);
-  // if (this.diceType_ === 'costume' || this.diceType_ === 'sound'){
-  //   height += Blockly.FieldMarkov.INPUT_BOX_WIDTH;
-  // }
-  if (this.diceType_ === 'costume' || this.diceType_ === 'sound') {
+  if (this.diceType_ === 'sound') {
     height = Blockly.FieldMarkov.SLIDER_STAGE_HEIGHT + Blockly.FieldMarkov.BOTTOM_MARGIN - 15 + Blockly.FieldMarkov.INPUT_BOX_WIDTH + Blockly.FieldMarkov.WASTEBIN_MARGIN;
+  } else if (this.diceType_ === 'costume') {
+    height = Blockly.FieldMarkov.SLIDER_STAGE_HEIGHT + Blockly.FieldMarkov.BOTTOM_MARGIN + Blockly.FieldMarkov.INPUT_BOX_WIDTH + Blockly.FieldMarkov.WASTEBIN_MARGIN - 22;
   } else {
     height = Blockly.FieldMarkov.SLIDER_STAGE_HEIGHT + Blockly.FieldMarkov.BOTTOM_MARGIN - 15;
   }
@@ -651,18 +695,9 @@ Blockly.FieldMarkov.prototype.showEditor_ = function () {
   this.textboxes_ = [];
   this.sliderTexts_ = [];
 
-  // Div that will contain the uniform distribution and random distribution buttons.
-  // var buttonDiv = Blockly.utils.createSvgElement('svg', {
-  //   'x': '0px',
-  //   'y': '0px'
-  // }, this.sliderStage_);
-  // this.createUniformRandomButtons(buttonDiv);
-
   this.whiteBackground_ = Blockly.utils.createSvgElement('rect', {
-    //'x': '0px', 'y': Blockly.FieldMarkov.BUTTON_HEIGHT + (Blockly.FieldMarkov.WASTEBIN_MARGIN / 2) + 'px',
     'x': '0px', 'y': (Blockly.FieldMarkov.WASTEBIN_MARGIN / 2) + 'px',
     'width': sliderSize + 'px',
-    //'height': (Blockly.FieldMarkov.SLIDER_STAGE_HEIGHT - Blockly.FieldMarkov.BUTTON_HEIGHT) + 'px',
     'height': Blockly.FieldMarkov.SLIDER_STAGE_HEIGHT + 'px',
     'rx': Blockly.FieldMarkov.SLIDER_NODE_RADIUS,
     'ry': Blockly.FieldMarkov.SLIDER_NODE_RADIUS,
@@ -685,20 +720,21 @@ Blockly.FieldMarkov.prototype.showEditor_ = function () {
         'ry': Blockly.FieldMarkov.SLIDER_NODE_RADIUS,
         'fill': '#FFFFFF'
       }, this.sliderStage_);
-      var img = Blockly.utils.createSvgElement('image',
-        {
-          'width': Blockly.FieldMarkov.INPUT_BOX_WIDTH - 6,
-          'height': Blockly.FieldMarkov.INPUT_BOX_WIDTH - 6,
-          'x': x + (Blockly.FieldMarkov.SLIDER_NODE_WIDTH - Blockly.FieldMarkov.INPUT_BOX_WIDTH) / 2 + 3,
-          'y': Blockly.FieldMarkov.SLIDER_STAGE_HEIGHT + Blockly.FieldMarkov.WASTEBIN_MARGIN * 1 + 3
-        }, this.sliderStage_);
-
+      var img = Blockly.utils.createSvgElement('foreignObject', {
+        'height': Blockly.FieldMarkov.INPUT_BOX_WIDTH - 6,
+        'width': Blockly.FieldMarkov.INPUT_BOX_WIDTH - 6,
+        'x': x + (Blockly.FieldMarkov.SLIDER_NODE_WIDTH - Blockly.FieldMarkov.INPUT_BOX_WIDTH) / 2 + 3,
+        'y': Blockly.FieldMarkov.SLIDER_STAGE_HEIGHT + Blockly.FieldMarkov.WASTEBIN_MARGIN * 1 + 3
+      }, this.sliderStage_);
       if (i < this.sliders_.length) {
-        let imgURL = "data:" + this.costumeData_[i].split('*')[0] + ";base64," + this.costumeData_[i].split('*')[1];
-        img.setAttributeNS(
-          'http://www.w3.org/1999/xlink',
-          'xlink:href',
-          imgURL);
+        var diceImg = document.createElement('img');
+        img.appendChild(diceImg);
+        diceImg.src = "data:" + this.costumeData_[i].split('*')[0] + ";base64," + this.costumeData_[i].split('*')[1];
+        diceImg.height = Blockly.FieldMarkov.INPUT_BOX_WIDTH - 6;
+        diceImg.width = Blockly.FieldMarkov.INPUT_BOX_WIDTH - 6;
+        diceImg.title = this.sliderStrings_[i];
+        diceImg.style.display = 'block';
+        diceImg.style.margin = 'auto';
       }
     }
 
@@ -720,50 +756,49 @@ Blockly.FieldMarkov.prototype.showEditor_ = function () {
     }
 
     if (this.diceType_ === 'costume') {
-      //var text_y = (Blockly.FieldMarkov.INPUT_BOX_HEIGHT + Blockly.FieldMarkov.PAD) * (numSliders + 1) + Blockly.FieldMarkov.WASTEBIN_MARGIN + Blockly.FieldMarkov.INPUT_BOX_HEIGHT + Blockly.FieldMarkov.INPUT_BOX_WIDTH + Blockly.FieldMarkov.WASTEBIN_MARGIN + 'px';
       var text_y = Blockly.FieldMarkov.SLIDER_STAGE_HEIGHT + Blockly.FieldMarkov.WASTEBIN_MARGIN + Blockly.FieldMarkov.INPUT_BOX_WIDTH + Blockly.FieldMarkov.WASTEBIN_MARGIN + 'px';
     }
     else {
       var text_y = Blockly.FieldMarkov.SLIDER_STAGE_HEIGHT + Blockly.FieldMarkov.WASTEBIN_MARGIN;
-      //var text_y = (Blockly.FieldMarkov.INPUT_BOX_HEIGHT + Blockly.FieldMarkov.PAD) * (numSliders + 1) + Blockly.FieldMarkov.WASTEBIN_MARGIN + Blockly.FieldMarkov.INPUT_BOX_HEIGHT
     }
-    // Add the svg containers for the textboxes.
-    var textBoxContainer = Blockly.utils.createSvgElement('foreignObject', {
-      'height': Blockly.FieldMarkov.INPUT_BOX_HEIGHT + 2,
-      'width': Blockly.FieldMarkov.INPUT_BOX_WIDTH,
-      'x': x - ((Blockly.FieldMarkov.INPUT_BOX_WIDTH - Blockly.FieldMarkov.SLIDER_NODE_WIDTH) / 2),
-      'y': text_y
-    }, this.sliderStage_);
+    if (this.diceType_ !== 'costume') {
 
-    // Put the textboxes into the containers.
-    var textbox = document.createElement('input');
-    textbox.style.width = Blockly.FieldMarkov.INPUT_BOX_WIDTH + 'px';
-    textbox.style.height = Blockly.FieldMarkov.INPUT_BOX_HEIGHT + 'px';
-    textbox.style.border = 'none';
-    textbox.style.outline = 'none';
-    textbox.style.color = '#91dfbf';
-    textbox.style.backgroundColor = this.sourceBlock_.getColourTertiary();
-    textbox.readOnly = true;
+      // Add the svg containers for the textboxes.
+      var textBoxContainer = Blockly.utils.createSvgElement('foreignObject', {
+        'height': Blockly.FieldMarkov.INPUT_BOX_HEIGHT + 2,
+        'width': Blockly.FieldMarkov.INPUT_BOX_WIDTH,
+        'x': x - ((Blockly.FieldMarkov.INPUT_BOX_WIDTH - Blockly.FieldMarkov.SLIDER_NODE_WIDTH) / 2),
+        'y': text_y
+      }, this.sliderStage_);
 
-    if (i >= this.sliderStrings_.length) {
-      textbox.defaultValue = '';
-    } else {
-      textbox.setAttribute("title", this.sliderStrings_[i]);
-      textbox.defaultValue = this.sliderStrings_[i];
+      // Put the textboxes into the containers.
+      var textbox = document.createElement('input');
+      textbox.style.width = Blockly.FieldMarkov.INPUT_BOX_WIDTH + 'px';
+      textbox.style.height = Blockly.FieldMarkov.INPUT_BOX_HEIGHT + 'px';
+      textbox.style.border = 'none';
+      textbox.style.outline = 'none';
+      textbox.style.color = '#91dfbf';
+      textbox.style.cursor = 'default';
+      textbox.style.backgroundColor = this.sourceBlock_.getColourTertiary();
+      textbox.readOnly = true;
+
+      if (i >= this.sliderStrings_.length) {
+        textbox.defaultValue = '';
+      } else {
+        textbox.setAttribute("title", this.sliderStrings_[i]);
+        textbox.defaultValue = this.sliderStrings_[i];
+      }
+      textbox.style.borderRadius = '5px';
+      textbox.style.textAlign = 'center';
+      textBoxContainer.appendChild(textbox);
+      this.textboxes_.push(textbox);
     }
-    textbox.style.borderRadius = '5px';
-    textbox.style.textAlign = 'center';
-    textBoxContainer.appendChild(textbox);
-    this.textboxes_.push(textbox);
 
     // Add the slider rectangles.
-    // var y = 45;
     var y = sliderSize - Blockly.FieldMarkov.SLIDER_NODE_WIDTH;
     var attr = {
       'x': x + 'px', 'y': y + 'px',
       'width': Blockly.FieldMarkov.SLIDER_NODE_WIDTH,
-      //'height': Blockly.FieldMarkov.MAX_SLIDER_HEIGHT,
-      // 'height': (Blockly.FieldMarkov.INPUT_BOX_HEIGHT + Blockly.FieldMarkov.PAD) * (numSliders + 1) - 28,
       'height': Blockly.FieldMarkov.MAX_SLIDER_HEIGHT,
       'rx': Blockly.FieldMarkov.SLIDER_NODE_RADIUS,
       'ry': Blockly.FieldMarkov.SLIDER_NODE_RADIUS,
@@ -962,9 +997,6 @@ Blockly.FieldMarkov.prototype.fillSliderNode_ = function (height, index) {
     this.sliderThumbNodes_[index].setAttribute('y', (maxHeight - newHeight));
     this.sliderThumbNodes_[index].setAttribute('height', newHeight);
 
-    // maxHeight = (Blockly.FieldMarkov.INPUT_BOX_HEIGHT + Blockly.FieldMarkov.PAD) * (numSliders + 1) - 28;
-    // newHeight = height / 100.0 * maxHeight;
-
     maxHeight = Blockly.FieldMarkov.MAX_SLIDER_HEIGHT;
     newHeight = height / 100.0 * maxHeight;
 
@@ -972,21 +1004,12 @@ Blockly.FieldMarkov.prototype.fillSliderNode_ = function (height, index) {
     this.sliderTexts_[index].innerHTML = Math.round(height) + '%';
     var textWidth = this.sliderTexts_[index].getBoundingClientRect().width;
     this.sliderTexts_[index].setAttribute('x', x - (textWidth - Blockly.FieldMarkov.SLIDER_NODE_WIDTH) / 2);
-
-    this.textboxes_[index].value = this.sliderStrings_[index];
+    if (this.diceType_ !== 'costume') {
+      this.textboxes_[index].value = this.sliderStrings_[index];
+    }
 
     this.sliderRects_[index].setAttribute('y', (Blockly.FieldMarkov.SLIDER_STAGE_HEIGHT - newHeight));
     this.sliderRects_[index].setAttribute('height', newHeight)
-
-    // this.sliderTexts_[index].setAttribute('y', ((Blockly.FieldMarkov.INPUT_BOX_HEIGHT + Blockly.FieldMarkov.PAD) * (numSliders + 1) - newHeight - 10 + 17));
-    // this.sliderTexts_[index].innerHTML = Math.round(height) + '%';
-    // var textWidth = this.sliderTexts_[index].getBoundingClientRect().width;
-    // this.sliderTexts_[index].setAttribute('x', x - (textWidth - Blockly.FieldMarkov.SLIDER_NODE_WIDTH) / 2);
-
-    // this.textboxes_[index].value = this.sliderStrings_[index];
-
-    // this.sliderRects_[index].setAttribute('y', ((Blockly.FieldMarkov.INPUT_BOX_HEIGHT + Blockly.FieldMarkov.PAD) * (numSliders + 1) - newHeight + 17));
-    // this.sliderRects_[index].setAttribute('height', newHeight);
 
   }
 };
@@ -1050,7 +1073,11 @@ Blockly.FieldMarkov.prototype.setSliderNode_ = function (sliderIndex, newHeight)
     case 'sound':
       newValue.push(this.soundData_.join('~'));
       break;
+    default:
+      newValue.push('');
+      break;
   }
+  newValue.push(this.diceName_)
   this.setValue(newValue.join('|||'));
 };
 
@@ -1060,7 +1087,6 @@ Blockly.FieldMarkov.prototype.setSliderNode_ = function (sliderIndex, newHeight)
  */
 Blockly.FieldMarkov.prototype.onMouseDown = function (e) {
   var numSliders = this.sliders_.length;
-  //Blockly.FieldMarkov.MAX_SLIDER_HEIGHT = (Blockly.FieldMarkov.INPUT_BOX_HEIGHT + Blockly.FieldMarkov.PAD) * (numSliders + 1) - 28;
   var bBox = this.sliderStage_.getBoundingClientRect();
   var dy = e.clientY - bBox.top - (Blockly.FieldMarkov.SLIDER_STAGE_HEIGHT - Blockly.FieldMarkov.MAX_SLIDER_HEIGHT);
   this.sliderMoveWrapper_ =
@@ -1076,11 +1102,6 @@ Blockly.FieldMarkov.prototype.onMouseDown = function (e) {
     return;
   }
 
-  // if (newHeight > 110) {
-  //   // Checks if the random distribution or uniform distribution buttons were hit.
-  //   this.checkForButton_(e);
-  //   return;
-  // }
   if (sliderHit > -1 && sliderHit < numSliders) {
     this.setSliderNode_(sliderHit, newHeight);
     this.sliderRects_[sliderHit].style.fill = '#4FA5CF';
@@ -1109,7 +1130,6 @@ Blockly.FieldMarkov.prototype.onMouseUp = function () {
  * @param {!Event} e Mouse move event.
  */
 Blockly.FieldMarkov.prototype.onMouseMove = function (e) {
-  // Blockly.FieldMarkov.MAX_SLIDER_HEIGHT = (Blockly.FieldMarkov.SLIDER_STAGE_HEIGHT - Blockly.FieldMarkov.BUTTON_HEIGHT);
   e.preventDefault();
   var bBox = this.sliderStage_.getBoundingClientRect();
   var dy = e.clientY - bBox.top - (Blockly.FieldMarkov.SLIDER_STAGE_HEIGHT - Blockly.FieldMarkov.MAX_SLIDER_HEIGHT);
@@ -1120,11 +1140,20 @@ Blockly.FieldMarkov.prototype.onMouseMove = function (e) {
 };
 
 Blockly.FieldMarkov.prototype.changeViewListener_ = function (e) {
-  document.getElementById(this.sliderStrings_.indexOf(this.currentView_)).setAttribute('fill', this.sourceBlock_.getColourTertiary());
-  var id = e.target.id;
-  this.currentView_ = (id > -1) ? this.sliderStrings_[id] : '~';
-  document.getElementById(this.sliderStrings_.indexOf(this.currentView_)).setAttribute('fill', '#FFFFFF');
-  this.setValue(this.markovValue_);
+  if (this.diceType_ !== 'costume') {
+    document.getElementById(this.sliderStrings_.indexOf(this.currentView_)).setAttribute('fill', this.sourceBlock_.getColourTertiary());
+    var id = e.target.id;
+    this.currentView_ = (id > -1) ? this.sliderStrings_[id] : '~';
+    document.getElementById(this.sliderStrings_.indexOf(this.currentView_)).setAttribute('fill', '#FFFFFF');
+    this.setValue(this.markovValue_);
+  }
+  else {
+    document.getElementById(this.sliderStrings_.indexOf(this.currentView_)).setAttribute('stroke-width', '0px');
+    var id = e.target.id;
+    this.currentView_ = (id > -1) ? this.sliderStrings_[id] : '~';
+    document.getElementById(this.sliderStrings_.indexOf(this.currentView_)).setAttribute('stroke-width', '2px');
+    this.setValue(this.markovValue_);
+  }
 };
 
 Blockly.FieldMarkov.prototype.playButtonListener_ = function (e) {
@@ -1149,21 +1178,6 @@ Blockly.FieldMarkov.prototype.checkForSlider_ = function (e) {
   return xDiv;
 };
 
-// Blockly.FieldMarkov.prototype.checkForButton_ = function (e) {
-//   var bBox = this.sliderStage_.getBoundingClientRect();
-//   var dx = e.clientX - bBox.left;
-//   var dy = e.clientY - bBox.top;
-//   var width = Blockly.FieldMarkov.BUTTON_WIDTH;
-//   var height = Blockly.FieldMarkov.BUTTON_HEIGHT;
-//   var pad = Blockly.FieldMarkov.BUTTON_PAD;
-//   if (dy <= height) {
-//     if (dx <= width) {
-//       this.setToUniform_();
-//     } else if (dx >= (width + pad) && dx <= (2 * width + pad)) {
-//       this.setToRandom_();
-//     }
-//   }
-// };
 
 Blockly.FieldMarkov.prototype.setToUniform_ = function () {
   var currentValue = this.sliders_.length;
@@ -1198,7 +1212,11 @@ Blockly.FieldMarkov.prototype.setToUniform_ = function () {
     case 'sound':
       newValue.push(this.soundData_.join('~'));
       break;
+    default:
+      newValue.push('');
+      break;
   }
+  newValue.push(this.diceName_);
   this.setValue(newValue.join('|||'));
 };
 
@@ -1240,7 +1258,11 @@ Blockly.FieldMarkov.prototype.setToRandom_ = function () {
     case 'sound':
       newValue.push(this.soundData_.join('~'));
       break;
+    default:
+      newValue.push('');
+      break;
   }
+  newValue.push(this.diceName_);
   this.setValue(newValue.join('|||'));
 };
 
