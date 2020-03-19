@@ -294,7 +294,7 @@ Blockly.FieldMarkov.MAX_SLIDER_HEIGHT = 135;
  * @type {number}
  * @const
  */
-Blockly.FieldMarkov.SLIDER_STAGE_HEIGHT = 180 - 17;
+Blockly.FieldMarkov.SLIDER_STAGE_HEIGHT = 180;
 
 /**
  * Maximum number of sliders that can exist.
@@ -514,7 +514,7 @@ Blockly.FieldMarkov.prototype.showEditor_ = function () {
   // If there is an existing drop-down someone else owns, hide it immediately and clear it.
   Blockly.DropDownDiv.hideWithoutAnimation();
   Blockly.DropDownDiv.clearContent();
-
+  
   var div = Blockly.DropDownDiv.getContentDiv();
 
   var numSliders = this.sliders_.length;
@@ -534,7 +534,9 @@ Blockly.FieldMarkov.prototype.showEditor_ = function () {
   markovDiv.style.display = 'inline-block';
   markovDiv.style.overflow = 'auto';
   markovDiv.style.maxHeight = '180px';
-  markovDiv.style.marginBottom = (this.diceType_ === 'costume') ? '10px' : '20px';
+  var margin = (this.diceType_ === 'costume') ? 34 : (this.diceType_ === 'sound') ? 58 : 25;
+  if(this.sliderStrings_.length > 6) { margin += 12 };
+  markovDiv.style.marginBottom = margin + 'px';
   markovDiv.style.marginRight = (this.diceType_ === 'costume') ? '-12px' : '-5px';
   markovDiv.style.paddingLeft = '8px';
   markovDiv.style.direction = 'rtl'
@@ -542,9 +544,6 @@ Blockly.FieldMarkov.prototype.showEditor_ = function () {
   div.appendChild(markovDiv);
 
   var height = ((Blockly.FieldMarkov.INPUT_BOX_HEIGHT + Blockly.FieldMarkov.PAD) * (numSliders + 1));
-  if (this.diceType_ === 'costume' || this.diceType_ === 'sound') {
-    height += Blockly.FieldMarkov.INPUT_BOX_WIDTH;
-  }
   var markovViews = Blockly.utils.createSvgElement('svg', {
     'xmlns': 'http://www.w3.org/2000/svg',
     'xmlns:html': 'http://www.w3.org/1999/xhtml',
@@ -571,8 +570,8 @@ Blockly.FieldMarkov.prototype.showEditor_ = function () {
 
       var addButtonText = Blockly.utils.createSvgElement('foreignObject', {
         'height': Blockly.FieldMarkov.INPUT_BOX_HEIGHT + 2,
-        'width': Blockly.FieldMarkov.INPUT_BOX_WIDTH - 4,
-        'x': 2,
+        'width': Blockly.FieldMarkov.INPUT_BOX_WIDTH,
+        'x': 0,
         'y': (i + 1) * (Blockly.FieldMarkov.INPUT_BOX_HEIGHT + Blockly.FieldMarkov.PAD) + 1,
         'fill': '#91dfbf',
         'id': i
@@ -674,7 +673,7 @@ Blockly.FieldMarkov.prototype.showEditor_ = function () {
   if (this.diceType_ === 'sound') {
     height = Blockly.FieldMarkov.SLIDER_STAGE_HEIGHT + Blockly.FieldMarkov.BOTTOM_MARGIN - 15 + Blockly.FieldMarkov.INPUT_BOX_WIDTH + Blockly.FieldMarkov.WASTEBIN_MARGIN;
   } else if (this.diceType_ === 'costume') {
-    height = Blockly.FieldMarkov.SLIDER_STAGE_HEIGHT + Blockly.FieldMarkov.BOTTOM_MARGIN + Blockly.FieldMarkov.INPUT_BOX_WIDTH + Blockly.FieldMarkov.WASTEBIN_MARGIN - 22;
+    height = Blockly.FieldMarkov.SLIDER_STAGE_HEIGHT + Blockly.FieldMarkov.INPUT_BOX_WIDTH + Blockly.FieldMarkov.WASTEBIN_MARGIN * 2;
   } else {
     height = Blockly.FieldMarkov.SLIDER_STAGE_HEIGHT + Blockly.FieldMarkov.BOTTOM_MARGIN - 15;
   }
